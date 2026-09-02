@@ -186,6 +186,18 @@ html, body {
   aspect-ratio: 16 / 10;
 }
 
+.polaroid img {
+  display: block;
+  width: 100%;
+  aspect-ratio: 4 / 5;
+  object-fit: cover;
+  border-radius: 3px;
+}
+
+.polaroid--wide img {
+  aspect-ratio: 16 / 10;
+}
+
 .ph-icon {
   font-size: 24px;
   opacity: 0.75;
@@ -287,6 +299,12 @@ figcaption input:focus {
 
 .gif-inner .ph-icon { font-size: 36px; }
 .gif-inner .ph-text { font-size: 14px; }
+
+.gif-slot img {
+  display: block;
+  width: 100%;
+  border-radius: 6px;
+}
 
 .gif-slot figcaption input {
   font-size: 13.5px;
