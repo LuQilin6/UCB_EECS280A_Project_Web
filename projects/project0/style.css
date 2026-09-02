@@ -1,20 +1,20 @@
 /* =========================================================
    Project 0 styling — scoped to this page only.
-   Warm / funny "scrapbook" theme. Safe to fully rewrite
-   without affecting the home page or any other project page.
+   Warm, understated theme (photo-portfolio feel, not a
+   scrapbook). Safe to fully rewrite without affecting the
+   home page or any other project page.
    ========================================================= */
 
 :root {
-  --bg: #fbf1de;
-  --bg-tape: #fff9ec;
-  --paper: #fffaf0;
-  --line: #e8d6ac;
-  --coral: #ff6b4a;
-  --mustard: #f2a30f;
-  --terracotta: #c1502e;
-  --ink: #4a3826;
-  --ink-dim: #8a7256;
-  --font-display: "Fredoka", "Comic Sans MS", "Segoe UI Rounded", sans-serif;
+  --bg: #f6f1e6;
+  --bg-tape: #fffdf8;
+  --paper: #fffdf8;
+  --line: #e2d8c3;
+  --accent: #a85a3f;        /* muted rust — was bright coral */
+  --accent-soft: #c08a3e;   /* soft ochre — was bright mustard */
+  --ink: #40352c;
+  --ink-dim: #8a7c6c;
+  --font-display: "Source Serif 4", Georgia, "Times New Roman", serif;
   --font-body: "Nunito", "Segoe UI", sans-serif;
 }
 
@@ -23,8 +23,7 @@
 html, body {
   margin: 0;
   background:
-    radial-gradient(circle at 8% 12%, rgba(255, 214, 153, 0.5), transparent 40%),
-    radial-gradient(circle at 92% 88%, rgba(255, 176, 138, 0.4), transparent 45%),
+    radial-gradient(circle at 50% 0%, rgba(200, 160, 120, 0.10), transparent 55%),
     var(--bg);
   color: var(--ink);
   font-family: var(--font-body);
@@ -36,20 +35,18 @@ html, body {
   left: 18px;
   font-size: 13px;
   font-weight: 700;
-  color: var(--terracotta);
+  color: var(--accent);
   text-decoration: none;
-  border: 2px solid var(--coral);
+  border: 1px solid var(--line);
   padding: 6px 14px;
   border-radius: 999px;
   background: var(--paper);
-  box-shadow: 2px 2px 0 var(--coral);
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  transition: border-color 0.15s ease, color 0.15s ease;
   z-index: 10;
 }
 
 .back:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0 var(--coral);
+  border-color: var(--accent);
 }
 
 .wrap {
@@ -68,36 +65,27 @@ html, body {
 .eyebrow {
   display: inline-block;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 12.5px;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--terracotta);
-  background: #ffe4c4;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--line);
   padding: 4px 14px;
   border-radius: 999px;
-  margin: 0 0 12px;
+  margin: 0 0 14px;
 }
 
 .page-head h1 {
   font-family: var(--font-display);
-  font-weight: 700;
-  font-size: clamp(32px, 6vw, 52px);
+  font-weight: 600;
+  font-size: clamp(30px, 5.5vw, 46px);
   margin: 0 0 10px;
-  color: var(--terracotta);
-}
-
-.wiggle {
-  display: inline-block;
-  animation: wiggle 2.6s ease-in-out infinite;
-}
-
-@keyframes wiggle {
-  0%, 100% { transform: rotate(-6deg); }
-  50% { transform: rotate(8deg); }
+  color: var(--ink);
 }
 
 .tagline {
-  font-size: 16px;
+  font-size: 15.5px;
   color: var(--ink-dim);
   font-style: italic;
   margin: 0;
@@ -111,7 +99,8 @@ html, body {
 
 .part h2 {
   font-family: var(--font-display);
-  font-size: clamp(20px, 3vw, 26px);
+  font-weight: 600;
+  font-size: clamp(19px, 2.6vw, 24px);
   color: var(--ink);
   margin: 0 0 10px;
   display: flex;
@@ -122,15 +111,15 @@ html, body {
 
 .num {
   font-family: var(--font-body);
-  font-weight: 800;
-  font-size: 12.5px;
+  font-weight: 700;
+  font-size: 12px;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  color: #fff;
-  background: var(--coral);
-  padding: 4px 12px;
+  color: var(--accent);
+  background: transparent;
+  border: 1px solid var(--line);
+  padding: 3px 11px;
   border-radius: 999px;
-  transform: rotate(-2deg);
 }
 
 .blurb {
@@ -141,7 +130,7 @@ html, body {
 }
 
 .blurb a {
-  color: var(--terracotta);
+  color: var(--accent);
   font-weight: 700;
 }
 
@@ -149,7 +138,7 @@ html, body {
   color: var(--ink);
 }
 
-/* ---------- Filmstrip / polaroids ---------- */
+/* ---------- Filmstrip / photo cards ---------- */
 
 .filmstrip {
   display: flex;
@@ -163,22 +152,17 @@ html, body {
 .polaroid {
   background: var(--bg-tape);
   border: 1px solid var(--line);
-  border-radius: 4px;
+  border-radius: 6px;
   padding: 10px 10px 14px;
-  box-shadow: 0 8px 18px rgba(120, 80, 40, 0.15);
+  box-shadow: 0 4px 12px rgba(90, 70, 50, 0.08);
   width: 148px;
   margin: 0;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  transition: box-shadow 0.15s ease, transform 0.15s ease;
 }
 
-.filmstrip .polaroid:nth-child(odd) { transform: rotate(-3deg); }
-.filmstrip .polaroid:nth-child(even) { transform: rotate(2.5deg); }
-.filmstrip .polaroid:nth-child(3n) { transform: rotate(-1.5deg); }
-
 .polaroid:hover {
-  transform: rotate(0deg) translateY(-4px) scale(1.03);
-  box-shadow: 0 14px 26px rgba(120, 80, 40, 0.22);
-  z-index: 2;
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(90, 70, 50, 0.13);
 }
 
 .polaroid--wide {
@@ -187,15 +171,9 @@ html, body {
 
 .photo-inner {
   aspect-ratio: 4 / 5;
-  border: 2px dashed #d8bd8a;
-  border-radius: 3px;
-  background: repeating-linear-gradient(
-    135deg,
-    #fdf0da,
-    #fdf0da 10px,
-    #f8e7c8 10px,
-    #f8e7c8 20px
-  );
+  border: 1.5px dashed #d3c6a8;
+  border-radius: 4px;
+  background: #f4ecdb;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -209,7 +187,8 @@ html, body {
 }
 
 .ph-icon {
-  font-size: 26px;
+  font-size: 24px;
+  opacity: 0.75;
 }
 
 .ph-text {
@@ -244,27 +223,26 @@ figcaption input {
 }
 
 figcaption input:focus {
-  outline: 2px solid var(--mustard);
+  outline: 2px solid var(--accent-soft);
   background: #fff;
 }
 
 /* ---------- Answer boxes ---------- */
 
 .answer-box {
-  background: #fff7e0;
+  background: #fbf6ea;
   border: 1px solid var(--line);
-  border-left: 6px solid var(--mustard);
+  border-left: 4px solid var(--accent-soft);
   border-radius: 8px;
   padding: 18px 22px;
   margin-top: 18px;
-  box-shadow: 2px 3px 0 rgba(210, 170, 100, 0.35);
 }
 
 .answer-label {
   margin: 0 0 8px;
-  font-weight: 800;
-  font-size: 13px;
-  color: var(--terracotta);
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--accent);
 }
 
 .answer-text {
@@ -278,7 +256,7 @@ figcaption input:focus {
 }
 
 .answer-text:focus {
-  outline: 2px dashed var(--mustard);
+  outline: 2px dashed var(--accent-soft);
   background: #fffdf5;
 }
 
@@ -291,20 +269,14 @@ figcaption input:focus {
   border: 1px solid var(--line);
   border-radius: 10px;
   padding: 14px 14px 18px;
-  box-shadow: 0 10px 22px rgba(120, 80, 40, 0.18);
+  box-shadow: 0 6px 16px rgba(90, 70, 50, 0.10);
 }
 
 .gif-inner {
   aspect-ratio: 16 / 10;
-  border: 3px dashed var(--coral);
+  border: 2px dashed var(--accent);
   border-radius: 6px;
-  background: repeating-linear-gradient(
-    135deg,
-    #fdf0da,
-    #fdf0da 12px,
-    #f8e2c2 12px,
-    #f8e2c2 24px
-  );
+  background: #f4ecdb;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -313,7 +285,7 @@ figcaption input:focus {
   color: var(--ink-dim);
 }
 
-.gif-inner .ph-icon { font-size: 40px; }
+.gif-inner .ph-icon { font-size: 36px; }
 .gif-inner .ph-text { font-size: 14px; }
 
 .gif-slot figcaption input {
@@ -330,7 +302,7 @@ figcaption input:focus {
 }
 
 .foot code {
-  background: #fff2d9;
+  background: #efe6d2;
   padding: 1px 6px;
   border-radius: 4px;
 }
