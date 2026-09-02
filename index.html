@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>EECS280A // Project Console</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖥️</text></svg>">
+<link rel="stylesheet" href="assets/home/style.css">
+</head>
+<body>
+  <canvas id="grid-bg"></canvas>
+
+  <div class="scanlines"></div>
+
+  <main class="wrap">
+    <header class="term-header">
+      <div class="term-bar">
+        <span class="dot red"></span><span class="dot yellow"></span><span class="dot green"></span>
+        <span class="term-title">visitor@eecs280a:~$</span>
+      </div>
+      <div class="term-body">
+        <p class="line"><span class="prompt">$</span> whoami</p>
+        <p class="out">student — UC Berkeley · EECS 280A</p>
+        <p class="line"><span class="prompt">$</span> ls ./projects</p>
+        <p class="out">project_00  project_01  project_02  project_03  project_04</p>
+        <h1 class="glitch" data-text="PROJECT CONSOLE">PROJECT CONSOLE</h1>
+        <p class="subtitle">Select a module below to boot into its dedicated build environment.<span class="cursor">_</span></p>
+      </div>
+    </header>
+
+    <section class="grid" aria-label="Project selection">
+      <a class="panel" href="projects/project0/index.html" style="--i:0">
+        <div class="panel-head">
+          <span class="tag">[ MODULE_00 ]</span>
+          <span class="status">● online</span>
+        </div>
+        <h2>Project 00</h2>
+        <p class="desc">Placeholder description — swap this in when the project is ready.</p>
+        <span class="enter">ENTER →</span>
+      </a>
+
+      <a class="panel" href="projects/project1/index.html" style="--i:1">
+        <div class="panel-head">
+          <span class="tag">[ MODULE_01 ]</span>
+          <span class="status">● online</span>
+        </div>
+        <h2>Project 01</h2>
+        <p class="desc">Placeholder description — swap this in when the project is ready.</p>
+        <span class="enter">ENTER →</span>
+      </a>
+
+      <a class="panel" href="projects/project2/index.html" style="--i:2">
+        <div class="panel-head">
+          <span class="tag">[ MODULE_02 ]</span>
+          <span class="status">● online</span>
+        </div>
+        <h2>Project 02</h2>
+        <p class="desc">Placeholder description — swap this in when the project is ready.</p>
+        <span class="enter">ENTER →</span>
+      </a>
+
+      <a class="panel" href="projects/project3/index.html" style="--i:3">
+        <div class="panel-head">
+          <span class="tag">[ MODULE_03 ]</span>
+          <span class="status">● online</span>
+        </div>
+        <h2>Project 03</h2>
+        <p class="desc">Placeholder description — swap this in when the project is ready.</p>
+        <span class="enter">ENTER →</span>
+      </a>
+
+      <a class="panel" href="projects/project4/index.html" style="--i:4">
+        <div class="panel-head">
+          <span class="tag">[ MODULE_04 ]</span>
+          <span class="status">● online</span>
+        </div>
+        <h2>Project 04</h2>
+        <p class="desc">Placeholder description — swap this in when the project is ready.</p>
+        <span class="enter">ENTER →</span>
+      </a>
+    </section>
+
+    <footer class="foot">
+      <p>UC Berkeley · EECS 280A — Project Archive · Built with vanilla HTML/CSS/JS, hosted on GitHub Pages.</p>
+    </footer>
+  </main>
+
+  <script src="assets/home/script.js"></script>
+</body>
+</html>
