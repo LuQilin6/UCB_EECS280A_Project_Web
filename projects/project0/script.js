@@ -1,7 +1,13 @@
-// Project 00 page script — scoped to this page only.
-// Currently just a placeholder hook; add project-specific interactivity here
-// (demos, charts, embeds, etc.) without touching any other page.
+// Project 0 page script — scoped to this page only.
+// Small touch: reset a polaroid's tilt while its caption is being edited,
+// so typing a real caption in isn't fighting the scrapbook rotation.
 (function () {
   "use strict";
-  console.log("[project0] page ready — replace this script with real content.");
+
+  document.querySelectorAll(".polaroid input, .gif-slot input").forEach(function (input) {
+    var card = input.closest("figure");
+    if (!card) return;
+    input.addEventListener("focus", function () { card.style.transform = "rotate(0deg)"; });
+    input.addEventListener("blur", function () { card.style.transform = ""; });
+  });
 })();

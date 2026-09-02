@@ -1,100 +1,343 @@
 /* =========================================================
-   Project 00 styling — scoped to this page only.
-   Safe to fully rewrite without affecting the home page
-   or any other /projects/* page.
+   Project 0 styling — scoped to this page only.
+   Warm / funny "scrapbook" theme. Safe to fully rewrite
+   without affecting the home page or any other project page.
    ========================================================= */
 
 :root {
-  --bg: #060a10;
-  --card: #0d151e;
-  --line: #1c2b3a;
-  --accent: #4bf7e9;
-  --text: #dbeef0;
-  --text-dim: #7d97a3;
-  --font-mono: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+  --bg: #fbf1de;
+  --bg-tape: #fff9ec;
+  --paper: #fffaf0;
+  --line: #e8d6ac;
+  --coral: #ff6b4a;
+  --mustard: #f2a30f;
+  --terracotta: #c1502e;
+  --ink: #4a3826;
+  --ink-dim: #8a7256;
+  --font-display: "Fredoka", "Comic Sans MS", "Segoe UI Rounded", sans-serif;
+  --font-body: "Nunito", "Segoe UI", sans-serif;
 }
 
 * { box-sizing: border-box; }
 
 html, body {
   margin: 0;
-  background: var(--bg);
-  color: var(--text);
-  font-family: var(--font-mono);
+  background:
+    radial-gradient(circle at 8% 12%, rgba(255, 214, 153, 0.5), transparent 40%),
+    radial-gradient(circle at 92% 88%, rgba(255, 176, 138, 0.4), transparent 45%),
+    var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
 }
 
 .back {
   position: fixed;
   top: 18px;
   left: 18px;
-  font-size: 12.5px;
-  color: var(--text-dim);
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--terracotta);
   text-decoration: none;
-  border: 1px solid var(--line);
-  padding: 6px 12px;
+  border: 2px solid var(--coral);
+  padding: 6px 14px;
   border-radius: 999px;
-  background: rgba(255, 255, 255, 0.02);
-  transition: color 0.15s ease, border-color 0.15s ease;
+  background: var(--paper);
+  box-shadow: 2px 2px 0 var(--coral);
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
   z-index: 10;
 }
 
 .back:hover {
-  color: var(--accent);
-  border-color: var(--accent);
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--coral);
 }
 
 .wrap {
-  max-width: 760px;
+  max-width: 900px;
   margin: 0 auto;
-  padding: 90px 24px 80px;
+  padding: 90px 24px 90px;
 }
 
-.tag {
+/* ---------- Header ---------- */
+
+.page-head {
+  text-align: center;
+  margin-bottom: 46px;
+}
+
+.eyebrow {
   display: inline-block;
-  font-size: 12px;
-  letter-spacing: 0.06em;
-  color: var(--accent);
-  border: 1px solid var(--line);
-  padding: 4px 10px;
-  border-radius: 6px;
-  margin-bottom: 14px;
-}
-
-h1 {
-  font-size: clamp(28px, 5vw, 40px);
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--terracotta);
+  background: #ffe4c4;
+  padding: 4px 14px;
+  border-radius: 999px;
   margin: 0 0 12px;
-  text-shadow: 0 0 18px color-mix(in srgb, var(--accent) 35%, transparent);
 }
 
-.sub {
-  color: var(--text-dim);
+.page-head h1 {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: clamp(32px, 6vw, 52px);
+  margin: 0 0 10px;
+  color: var(--terracotta);
+}
+
+.wiggle {
+  display: inline-block;
+  animation: wiggle 2.6s ease-in-out infinite;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: rotate(-6deg); }
+  50% { transform: rotate(8deg); }
+}
+
+.tagline {
+  font-size: 16px;
+  color: var(--ink-dim);
+  font-style: italic;
+  margin: 0;
+}
+
+/* ---------- Parts ---------- */
+
+.part {
+  margin-top: 56px;
+}
+
+.part h2 {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 3vw, 26px);
+  color: var(--ink);
+  margin: 0 0 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.num {
+  font-family: var(--font-body);
+  font-weight: 800;
+  font-size: 12.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: #fff;
+  background: var(--coral);
+  padding: 4px 12px;
+  border-radius: 999px;
+  transform: rotate(-2deg);
+}
+
+.blurb {
+  font-size: 15px;
+  line-height: 1.7;
+  color: var(--ink-dim);
+  max-width: 68ch;
+}
+
+.blurb a {
+  color: var(--terracotta);
+  font-weight: 700;
+}
+
+.blurb strong {
+  color: var(--ink);
+}
+
+/* ---------- Filmstrip / polaroids ---------- */
+
+.filmstrip {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 30px 0 24px;
+  padding: 10px 0;
+}
+
+.polaroid {
+  background: var(--bg-tape);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  padding: 10px 10px 14px;
+  box-shadow: 0 8px 18px rgba(120, 80, 40, 0.15);
+  width: 148px;
+  margin: 0;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.filmstrip .polaroid:nth-child(odd) { transform: rotate(-3deg); }
+.filmstrip .polaroid:nth-child(even) { transform: rotate(2.5deg); }
+.filmstrip .polaroid:nth-child(3n) { transform: rotate(-1.5deg); }
+
+.polaroid:hover {
+  transform: rotate(0deg) translateY(-4px) scale(1.03);
+  box-shadow: 0 14px 26px rgba(120, 80, 40, 0.22);
+  z-index: 2;
+}
+
+.polaroid--wide {
+  width: 320px;
+}
+
+.photo-inner {
+  aspect-ratio: 4 / 5;
+  border: 2px dashed #d8bd8a;
+  border-radius: 3px;
+  background: repeating-linear-gradient(
+    135deg,
+    #fdf0da,
+    #fdf0da 10px,
+    #f8e7c8 10px,
+    #f8e7c8 20px
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  color: var(--ink-dim);
+}
+
+.polaroid--wide .photo-inner {
+  aspect-ratio: 16 / 10;
+}
+
+.ph-icon {
+  font-size: 26px;
+}
+
+.ph-text {
+  font-size: 11.5px;
+  font-weight: 700;
+  text-align: center;
+  padding: 0 8px;
+}
+
+.ph-sub {
+  font-size: 10.5px;
+  color: var(--ink-dim);
+  opacity: 0.8;
+}
+
+figcaption {
+  margin-top: 8px;
+  text-align: center;
+}
+
+figcaption input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  text-align: center;
+  font-family: var(--font-body);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink);
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+figcaption input:focus {
+  outline: 2px solid var(--mustard);
+  background: #fff;
+}
+
+/* ---------- Answer boxes ---------- */
+
+.answer-box {
+  background: #fff7e0;
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--mustard);
+  border-radius: 8px;
+  padding: 18px 22px;
+  margin-top: 18px;
+  box-shadow: 2px 3px 0 rgba(210, 170, 100, 0.35);
+}
+
+.answer-label {
+  margin: 0 0 8px;
+  font-weight: 800;
+  font-size: 13px;
+  color: var(--terracotta);
+}
+
+.answer-text {
+  margin: 0;
   font-size: 14.5px;
-  line-height: 1.6;
-  max-width: 60ch;
+  line-height: 1.7;
+  color: var(--ink);
+  min-height: 1.4em;
+  border-radius: 4px;
+  padding: 2px 4px;
 }
 
-.card {
-  margin-top: 24px;
-  padding: 22px 24px;
-  background: var(--card);
+.answer-text:focus {
+  outline: 2px dashed var(--mustard);
+  background: #fffdf5;
+}
+
+/* ---------- Part 3 GIF slot ---------- */
+
+.gif-slot {
+  margin: 30px auto 0;
+  max-width: 520px;
+  background: var(--bg-tape);
   border: 1px solid var(--line);
   border-radius: 10px;
+  padding: 14px 14px 18px;
+  box-shadow: 0 10px 22px rgba(120, 80, 40, 0.18);
 }
 
-.card h2 {
-  margin: 0 0 10px;
-  font-size: 16px;
-  color: var(--accent);
+.gif-inner {
+  aspect-ratio: 16 / 10;
+  border: 3px dashed var(--coral);
+  border-radius: 6px;
+  background: repeating-linear-gradient(
+    135deg,
+    #fdf0da,
+    #fdf0da 12px,
+    #f8e2c2 12px,
+    #f8e2c2 24px
+  );
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--ink-dim);
 }
 
-.card p,
-.card li {
+.gif-inner .ph-icon { font-size: 40px; }
+.gif-inner .ph-text { font-size: 14px; }
+
+.gif-slot figcaption input {
   font-size: 13.5px;
-  line-height: 1.6;
-  color: var(--text);
 }
 
-.card ul {
-  margin: 0;
-  padding-left: 18px;
+/* ---------- Footer ---------- */
+
+.foot {
+  margin-top: 70px;
+  text-align: center;
+  font-size: 12px;
+  color: var(--ink-dim);
+}
+
+.foot code {
+  background: #fff2d9;
+  padding: 1px 6px;
+  border-radius: 4px;
+}
+
+@media (max-width: 560px) {
+  .wrap { padding: 80px 16px 70px; }
+  .filmstrip { gap: 12px; }
+  .polaroid { width: 42%; }
+  .polaroid--wide { width: 100%; }
 }
