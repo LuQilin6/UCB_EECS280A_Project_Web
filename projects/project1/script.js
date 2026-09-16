@@ -1,7 +1,8 @@
-// Project 01 page script — scoped to this page only.
-// Currently just a placeholder hook; add project-specific interactivity here
-// (demos, charts, embeds, etc.) without touching any other page.
+// Project 1 page script — scoped to this page only.
+// The offset tables and content are static HTML; this is just a
+// placeholder hook for any future interactivity (e.g. lightboxing
+// the result images once real photos are wired in).
 (function () {
   "use strict";
-  console.log("[project1] page ready — replace this script with real content.");
+  console.log("[project1] page ready.");
 })();

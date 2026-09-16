@@ -3,31 +3,425 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Project 01 // EECS280A</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖥️</text></svg>">
+<title>Project 1 // Images of the Russian Empire</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎨</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=Nunito:ital,wght@0,400;0,600;0,700;1,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <a class="back" href="../../index.html">← back to console</a>
 
   <main class="wrap">
-    <div class="tag">MODULE_01</div>
-    <h1>Project 01</h1>
-    <p class="sub">This page is a placeholder — replace this content with the real project write-up, demo, or embedded media whenever it's ready.</p>
 
-    <section class="card">
-      <h2>Overview</h2>
-      <p>Describe the problem, approach, and outcome of Project 01 here.</p>
+    <header class="page-head">
+      <p class="eyebrow">Project 1 — CS280A</p>
+      <h1>Images of the Russian Empire: Colorizing the Prokudin-Gorskii Collection</h1>
+      <p class="tagline">Splitting, aligning, and recombining three grayscale glass-plate exposures (B, G, R) into single color photographs — automatically.</p>
+    </header>
+
+    <!-- ================= PART 1 ================= -->
+    <section class="part">
+      <h2><span class="num">Part 1</span> Single-Scale Alignment</h2>
+      <p class="blurb">
+        For the small <code>.jpg</code> scans, I exhaustively search every integer displacement in a
+        <code>[-15, 15]</code> window on both axes, scoring each candidate shift of the green and red
+        channels against the blue channel with two metrics: <strong>L2 / Euclidean distance</strong>
+        (<code>sqrt(sum((image1 - image2)^2))</code>, lower is better) and <strong>Normalized
+        Cross-Correlation</strong> (a dot product of mean-subtracted, unit-normalized channels, higher is
+        better). The best-scoring <code>(dx, dy)</code> shift is applied with <code>np.roll</code> before
+        stacking the three channels into one RGB image.
+      </p>
+
+      <div class="method-row">
+        <p class="method-row-label"><span>L2 / Euclidean distance</span></p>
+        <div class="filmstrip">
+          <figure class="photo-slot polaroid polaroid--lg">
+            <img src="assets/singlescale/l2/cathedral.jpg" alt="Single-scale L2 aligned cathedral.jpg" loading="lazy">
+            <figcaption><input type="text" value="cathedral" aria-label="Caption for cathedral single-scale L2 result"></figcaption>
+          </figure>
+          <figure class="photo-slot polaroid polaroid--lg">
+            <img src="assets/singlescale/l2/monastery.jpg" alt="Single-scale L2 aligned monastery.jpg" loading="lazy">
+            <figcaption><input type="text" value="monastery" aria-label="Caption for monastery single-scale L2 result"></figcaption>
+          </figure>
+          <figure class="photo-slot polaroid polaroid--lg">
+            <img src="assets/singlescale/l2/tobolsk.jpg" alt="Single-scale L2 aligned tobolsk.jpg" loading="lazy">
+            <figcaption><input type="text" value="tobolsk" aria-label="Caption for tobolsk single-scale L2 result"></figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="method-row">
+        <p class="method-row-label"><span>NCC / Normalized Cross-Correlation</span></p>
+        <div class="filmstrip">
+          <figure class="photo-slot polaroid polaroid--lg">
+            <img src="assets/singlescale/ncc/cathedral.jpg" alt="Single-scale NCC aligned cathedral.jpg" loading="lazy">
+            <figcaption><input type="text" value="cathedral" aria-label="Caption for cathedral single-scale NCC result"></figcaption>
+          </figure>
+          <figure class="photo-slot polaroid polaroid--lg">
+            <img src="assets/singlescale/ncc/monastery.jpg" alt="Single-scale NCC aligned monastery.jpg" loading="lazy">
+            <figcaption><input type="text" value="monastery" aria-label="Caption for monastery single-scale NCC result"></figcaption>
+          </figure>
+          <figure class="photo-slot polaroid polaroid--lg">
+            <img src="assets/singlescale/ncc/tobolsk.jpg" alt="Single-scale NCC aligned tobolsk.jpg" loading="lazy">
+            <figcaption><input type="text" value="tobolsk" aria-label="Caption for tobolsk single-scale NCC result"></figcaption>
+          </figure>
+        </div>
+      </div>
+
+      <div class="table-wrap">
+        <table class="offset-table">
+          <caption>Single-scale displacements, window [-15,15]. L2 and NCC agree exactly on all three images.</caption>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>L2 &middot; G shift (dx,dy)</th>
+              <th>L2 &middot; R shift (dx,dy)</th>
+              <th>NCC &middot; G shift (dx,dy)</th>
+              <th>NCC &middot; R shift (dx,dy)</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="name">cathedral</td><td class="num">(2, 5)</td><td class="num">(3, 12)</td><td class="num">(2, 5)</td><td class="num">(3, 12)</td></tr>
+            <tr><td class="name">monastery</td><td class="num">(2, -3)</td><td class="num">(2, 3)</td><td class="num">(2, -3)</td><td class="num">(2, 3)</td></tr>
+            <tr><td class="name">tobolsk</td><td class="num">(2, 3)</td><td class="num">(3, 6)</td><td class="num">(2, 3)</td><td class="num">(3, 6)</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
 
-    <section class="card">
-      <h2>Details</h2>
-      <ul>
-        <li>Tech stack: —</li>
-        <li>Status: placeholder</li>
-        <li>Links: —</li>
-      </ul>
+    <!-- ================= PART 2 ================= -->
+    <section class="part">
+      <h2><span class="num">Part 2</span> Multi-Scale Pyramid Alignment</h2>
+      <p class="blurb">
+        Exhaustive search becomes far too slow on the full-resolution <code>.tif</code> scans, where the
+        true displacement can be hundreds of pixels. Instead I build an image pyramid: each image is
+        repeatedly downsampled by 2&times; (via <code>sk.transform.rescale</code>) until it's small enough
+        to align exhaustively, then the estimated shift is doubled and refined with a small
+        <code>[-2, 2]</code> window while moving back down to full resolution. All 14 example images below
+        were aligned this way, on RGB pixel values, with both the L2 and NCC metrics — shown here after the
+        full cropping / contrast / white-balance / color-mapping pipeline (Part 4).
+      </p>
+
+      <div class="result-grid">
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/cathedral.jpg" alt="Pyramid aligned cathedral" loading="lazy"><figcaption><input type="text" value="cathedral" aria-label="Caption for cathedral pyramid result"></figcaption></figure>
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/church.jpg" alt="Pyramid aligned church" loading="lazy"><figcaption><input type="text" value="church" aria-label="Caption for church pyramid result"></figcaption></figure>
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/emir.jpg" alt="Pyramid aligned emir (misaligned — see Part 3)" loading="lazy"><figcaption><input type="text" value="emir (misaligned)" aria-label="Caption for emir pyramid result"></figcaption></figure>
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/harvesters.jpg" alt="Pyramid aligned harvesters" loading="lazy"><figcaption><input type="text" value="harvesters" aria-label="Caption for harvesters pyramid result"></figcaption></figure>
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/icon.jpg" alt="Pyramid aligned icon" loading="lazy"><figcaption><input type="text" value="icon" aria-label="Caption for icon pyramid result"></figcaption></figure>
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/ilemselga.jpg" alt="Pyramid aligned ilemselga" loading="lazy"><figcaption><input type="text" value="ilemselga" aria-label="Caption for ilemselga pyramid result"></figcaption></figure>
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/melons.jpg" alt="Pyramid aligned melons" loading="lazy"><figcaption><input type="text" value="melons" aria-label="Caption for melons pyramid result"></figcaption></figure>
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/monastery.jpg" alt="Pyramid aligned monastery" loading="lazy"><figcaption><input type="text" value="monastery" aria-label="Caption for monastery pyramid result"></figcaption></figure>
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/religous_painting.jpg" alt="Pyramid aligned religous_painting" loading="lazy"><figcaption><input type="text" value="religous_painting" aria-label="Caption for religous_painting pyramid result"></figcaption></figure>
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/self_portrait.jpg" alt="Pyramid aligned self_portrait" loading="lazy"><figcaption><input type="text" value="self_portrait" aria-label="Caption for self_portrait pyramid result"></figcaption></figure>
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/siren.jpg" alt="Pyramid aligned siren" loading="lazy"><figcaption><input type="text" value="siren" aria-label="Caption for siren pyramid result"></figcaption></figure>
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/three_generations.jpg" alt="Pyramid aligned three_generations" loading="lazy"><figcaption><input type="text" value="three_generations" aria-label="Caption for three_generations pyramid result"></figcaption></figure>
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/tobolsk.jpg" alt="Pyramid aligned tobolsk" loading="lazy"><figcaption><input type="text" value="tobolsk" aria-label="Caption for tobolsk pyramid result"></figcaption></figure>
+        <figure class="photo-slot polaroid"><img src="assets/pyramid/wharf.jpg" alt="Pyramid aligned wharf" loading="lazy"><figcaption><input type="text" value="wharf" aria-label="Caption for wharf pyramid result"></figcaption></figure>
+      </div>
+
+      <div class="table-wrap">
+        <table class="offset-table">
+          <caption>Pyramid displacements on all 14 example images, computed on RGB pixel values. The emir row is flagged — see Part 3.</caption>
+          <thead>
+            <tr>
+              <th>Image</th>
+              <th>NCC &middot; G shift</th>
+              <th>NCC &middot; R shift</th>
+              <th>L2 &middot; G shift</th>
+              <th>L2 &middot; R shift</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr><td class="name">cathedral</td><td class="num">(2, 5)</td><td class="num">(3, 12)</td><td class="num">(2, 5)</td><td class="num">(3, 12)</td></tr>
+            <tr><td class="name">church</td><td class="num">(-11, 25)</td><td class="num">(-5, 58)</td><td class="num">(-11, 25)</td><td class="num">(-5, 58)</td></tr>
+            <tr class="flagged"><td class="name">emir</td><td class="num">(24, 49)</td><td class="num">(-606, -278)</td><td class="num">(24, 49)</td><td class="num">(33, -268)</td></tr>
+            <tr><td class="name">harvesters</td><td class="num">(16, 60)</td><td class="num">(14, 124)</td><td class="num">(16, 60)</td><td class="num">(14, 124)</td></tr>
+            <tr><td class="name">icon</td><td class="num">(17, 41)</td><td class="num">(23, 89)</td><td class="num">(17, 41)</td><td class="num">(23, 89)</td></tr>
+            <tr><td class="name">ilemselga</td><td class="num">(6, 40)</td><td class="num">(9, 130)</td><td class="num">(6, 40)</td><td class="num">(9, 130)</td></tr>
+            <tr><td class="name">melons</td><td class="num">(9, 82)</td><td class="num">(11, 177)</td><td class="num">(9, 82)</td><td class="num">(11, 177)</td></tr>
+            <tr><td class="name">monastery</td><td class="num">(2, -3)</td><td class="num">(2, 3)</td><td class="num">(2, -3)</td><td class="num">(2, 3)</td></tr>
+            <tr><td class="name">religous_painting</td><td class="num">(4, 28)</td><td class="num">(7, 68)</td><td class="num">(4, 28)</td><td class="num">(7, 68)</td></tr>
+            <tr><td class="name">self_portrait</td><td class="num">(26, 78)</td><td class="num">(1, 170)</td><td class="num">(26, 78)</td><td class="num">(1, 171)</td></tr>
+            <tr><td class="name">siren</td><td class="num">(-7, 49)</td><td class="num">(-25, 95)</td><td class="num">(-7, 49)</td><td class="num">(-25, 96)</td></tr>
+            <tr><td class="name">three_generations</td><td class="num">(13, 55)</td><td class="num">(10, 112)</td><td class="num">(13, 55)</td><td class="num">(10, 112)</td></tr>
+            <tr><td class="name">tobolsk</td><td class="num">(2, 3)</td><td class="num">(3, 6)</td><td class="num">(2, 3)</td><td class="num">(3, 6)</td></tr>
+            <tr><td class="name">wharf</td><td class="num">(-7, 15)</td><td class="num">(-17, 83)</td><td class="num">(-7, 15)</td><td class="num">(-17, 83)</td></tr>
+          </tbody>
+        </table>
+      </div>
     </section>
+
+    <!-- ================= PART 3 ================= -->
+    <section class="part">
+      <h2><span class="num">Part 3</span> Where It Broke: emir.tif</h2>
+      <div class="answer-box">
+        <p class="answer-label">🖊️ Why did alignment fail here?</p>
+        <p class="answer-text" contenteditable="true">
+          Out of all 14 example images, only <strong>emir.tif</strong> (the Emir of Bukhara) fails to align
+          under the pyramid pipeline — its red-channel shift comes out as roughly (-606, -278) or (33, -268)
+          depending on the metric, wildly outside the range every other image falls in (all within a few
+          dozen to ~180 pixels). emir.tif was the hardest image in the set to align. Unlike a simple brightness
+          offset between channels, the Emir's clothing and turban genuinely look different across R, G, and B( we can also notice this from the original image).
+          It's a region can appear bright in one channel and dark in another purely because of its color. 
+          Raw-pixel similarity metrics (NCC/L2) have no reliable signal to latch onto there. 
+          Switching to gradient/edge-based alignment substantially fixed this, since object boundaries tend to occur in the same place across all three channels regardless of color(shown in part 4.5).
+        </p>
+      </div>
+    </section>
+
+    <!-- ================= PART 4 ================= -->
+    <section class="part">
+      <h2><span class="num">Part 4</span> Bells &amp; Whistles</h2>
+      <p class="blurb">
+        Here are the extra techniques I implemented to make the final colorized images look more like the original glass-plate exposures.
+        Each before/after pair below is literally the previous stage's output feeding into the next
+        stage. Three images (church, icon, three_generations) are shown here through every stage so the
+        cumulative effect is easy to follow. More pictures are available in the out folder on github if needed.
+      </p>
+
+      <!-- ---- 4.1 Automatic cropping ---- -->
+      <h3><span class="subnum">4.1</span> Automatic Cropping</h3>
+      <div class="compare-set">
+        <p class="compare-title">church</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/crop/before-church.jpg" alt="church before automatic cropping" loading="lazy"><figcaption><input type="text" value="before" aria-label="church crop before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/crop/after-church.jpg" alt="church after automatic cropping" loading="lazy"><figcaption><input type="text" value="after" aria-label="church crop after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="compare-set">
+        <p class="compare-title">icon</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/crop/before-icon.jpg" alt="icon before automatic cropping" loading="lazy"><figcaption><input type="text" value="before" aria-label="icon crop before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/crop/after-icon.jpg" alt="icon after automatic cropping" loading="lazy"><figcaption><input type="text" value="after" aria-label="icon crop after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="compare-set">
+        <p class="compare-title">three_generations</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/crop/before-three_generations.jpg" alt="three_generations before automatic cropping" loading="lazy"><figcaption><input type="text" value="before" aria-label="three_generations crop before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/crop/after-three_generations.jpg" alt="three_generations after automatic cropping" loading="lazy"><figcaption><input type="text" value="after" aria-label="three_generations crop after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="answer-box">
+        <p class="answer-label">🖊️ Approach</p>
+        <p class="answer-text" contenteditable="true">
+          If we only combine the three layers directly, we will notice that there are borders and make the picture looks bad. In this way, we want to crop the image. Rather than slicing off a fixed number of border pixels, I detect the border by measuring per-pixel disagreement between the R, G, and B channels (max(R,G,B) − min(R,G,B)), 
+          based on the insight that well-aligned interior content shows fairly consistent color across channels while the border shows strong channel disagreement. I compute a "normal"
+          baseline from the image's interior, then scan inward from each of 
+          the four edges (up to a bounded fraction of that dimension) and crop through the last pixel whose disagreement still exceeds 1.5× that baseline, rather than the first dip below 
+          it. This is because the border can contain multiple bands with transient dips in between. We can see from the before/after pairs that this approach successfully crops out the border while preserving the interior content.
+        </p>
+      </div>
+
+      <!-- ---- 4.2 Automatic contrasting ---- -->
+      <h3><span class="subnum">4.2</span> Automatic Contrasting</h3>
+      <div class="compare-set">
+        <p class="compare-title">church</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/contrast/before-church.jpg" alt="church before automatic contrasting" loading="lazy"><figcaption><input type="text" value="before" aria-label="church contrast before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/contrast/after-church.jpg" alt="church after automatic contrasting" loading="lazy"><figcaption><input type="text" value="after" aria-label="church contrast after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="compare-set">
+        <p class="compare-title">icon</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/contrast/before-icon.jpg" alt="icon before automatic contrasting" loading="lazy"><figcaption><input type="text" value="before" aria-label="icon contrast before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/contrast/after-icon.jpg" alt="icon after automatic contrasting" loading="lazy"><figcaption><input type="text" value="after" aria-label="icon contrast after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="compare-set">
+        <p class="compare-title">three_generations</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/contrast/before-three_generations.jpg" alt="three_generations before automatic contrasting" loading="lazy"><figcaption><input type="text" value="before" aria-label="three_generations contrast before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/contrast/after-three_generations.jpg" alt="three_generations after automatic contrasting" loading="lazy"><figcaption><input type="text" value="after" aria-label="three_generations contrast after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="answer-box">
+        <p class="answer-label">🖊️ Approach</p>
+        <p class="answer-text" contenteditable="true">
+          We don't want the pixel value in a picture be too large or too small, in this way, we need to implement contrast enhancement. I apply a single global linear rescale, (im − im.min()) / (im.max() − im.min()), using the minimum and maximum taken across all three channels together rather than per channel. 
+          Using a shared global min/max (instead of stretching each channel independently) is what keeps this purely a contrast operation rather than accidentally also performing white 
+          balance. It expands the image to fill the full [0, 1] range while preserving the original relative balance between channels.
+        </p>
+      </div>
+
+      <!-- ---- 4.3 Automatic white balance ---- -->
+      <h3><span class="subnum">4.3</span> Automatic White Balance</h3>
+      <div class="compare-set">
+        <p class="compare-title">church</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/whitebalance/before-church.jpg" alt="church before white balance" loading="lazy"><figcaption><input type="text" value="before" aria-label="church white balance before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/whitebalance/after-church.jpg" alt="church after gray-world white balance" loading="lazy"><figcaption><input type="text" value="after" aria-label="church white balance after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="compare-set">
+        <p class="compare-title">icon</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/whitebalance/before-icon.jpg" alt="icon before white balance" loading="lazy"><figcaption><input type="text" value="before" aria-label="icon white balance before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/whitebalance/after-icon.jpg" alt="icon after gray-world white balance" loading="lazy"><figcaption><input type="text" value="after" aria-label="icon white balance after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="compare-set">
+        <p class="compare-title">three_generations</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/whitebalance/before-three_generations.jpg" alt="three_generations before white balance" loading="lazy"><figcaption><input type="text" value="before" aria-label="three_generations white balance before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/whitebalance/after-three_generations.jpg" alt="three_generations after gray-world white balance" loading="lazy"><figcaption><input type="text" value="after" aria-label="three_generations white balance after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="answer-box">
+        <p class="answer-label">🖊️ Approach</p>
+        <p class="answer-text" contenteditable="true">
+          We also want the image's white/gray to appear neutral. This is why we want to do white balance. I estimate the scene illuminant two different ways and correct for it with a per-channel gain. The gray_world method assumes the 
+          image's average color should be neutral, and computes each channel's gain as overall_mean / channel_mean。 It equalizd the channels while preserving overall brightness. 
+          The white_patch method instead assumes the image's brightest pixel represents true white, and scales each channel so its maximum value hits exactly 1. 
+          In practice gray_world was the more useful of the two for correcting the mild yellow/warm cast visible in our aligned outputs. White-patch is more easily thrown off by a single bright highlight in
+          these scans.
+        </p>
+      </div>
+
+      <!-- ---- 4.4 Better color mapping ---- -->
+      <h3><span class="subnum">4.4</span> Better Color Mapping</h3>
+      <div class="compare-set">
+        <p class="compare-title">church</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/colormap/before-church.jpg" alt="church before color mapping" loading="lazy"><figcaption><input type="text" value="before" aria-label="church color mapping before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/colormap/after-church.jpg" alt="church after color mapping" loading="lazy"><figcaption><input type="text" value="after" aria-label="church color mapping after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="compare-set">
+        <p class="compare-title">icon</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/colormap/before-icon.jpg" alt="icon before color mapping" loading="lazy"><figcaption><input type="text" value="before" aria-label="icon color mapping before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/colormap/after-icon.jpg" alt="icon after color mapping" loading="lazy"><figcaption><input type="text" value="after" aria-label="icon color mapping after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="compare-set">
+        <p class="compare-title">three_generations</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/colormap/before-three_generations.jpg" alt="three_generations before color mapping" loading="lazy"><figcaption><input type="text" value="before" aria-label="three_generations color mapping before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/colormap/after-three_generations.jpg" alt="three_generations after color mapping" loading="lazy"><figcaption><input type="text" value="after" aria-label="three_generations color mapping after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="answer-box">
+        <p class="answer-label">🖊️ Approach</p>
+        <p class="answer-text" contenteditable="true">
+          Instead of assuming the plate's physical R/G/B filters correspond directly to the RGB primaries, I applied a full 3×3 linear mixing matrix to the pixel values. 
+          I implemented this by using a manually-specified matrix with a diagonal per-channel boost <code>[1.1, 1.2, 1.2]</code>. This is after several rounds of trial-and-error tuning
+           to make the final images look more like the original glass-plate exposures as the original pictures tend to be yellowish and dark. What the matrix does is to boost the green 
+           and blue channels more than the red channel, which is consistent with the original color cast of the glass plates. From the comparison of images, we can see that the color mapping
+            step makes the images look more natural and bright.
+        </p>
+      </div>
+
+      <!-- ---- 4.5 Better features ---- -->
+      <h3><span class="subnum">4.5</span> Better Features</h3>
+      <div class="compare-set">
+        <p class="compare-title">church — pyramid g=(-11,25) r=(-5,58) &rarr; features g=(4,25) r=(-4,58)</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/features/before-church.jpg" alt="church aligned by pixel intensity (pyramid)" loading="lazy"><figcaption><input type="text" value="pyramid" aria-label="church features before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/features/after-church.jpg" alt="church aligned by gradient features" loading="lazy"><figcaption><input type="text" value="features" aria-label="church features after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="compare-set">
+        <p class="compare-title">three_generations — pyramid g=(13,55) r=(10,112) &rarr; features g=(12,54) r=(8,111)</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/features/before-three_generations.jpg" alt="three_generations aligned by pixel intensity (pyramid)" loading="lazy"><figcaption><input type="text" value="pyramid" aria-label="three_generations features before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/features/after-three_generations.jpg" alt="three_generations aligned by gradient features" loading="lazy"><figcaption><input type="text" value="features" aria-label="three_generations features after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="compare-set">
+        <p class="compare-title">emir — pyramid g=(24,49) r=(-606,-278) &rarr; features g=(23,49) r=(40,107)</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid"><img src="assets/bells/features/before-emir.jpg" alt="emir aligned by pixel intensity — broken" loading="lazy"><figcaption><input type="text" value="pyramid (broken)" aria-label="emir features before"></figcaption></figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid"><img src="assets/bells/features/after-emir.jpg" alt="emir aligned by gradient features — fixed" loading="lazy"><figcaption><input type="text" value="features (fixed)" aria-label="emir features after"></figcaption></figure>
+        </div>
+      </div>
+      <div class="answer-box">
+        <p class="answer-label">🖊️ Approach</p>
+        <p class="answer-text" contenteditable="true">
+
+          For images where raw pixel intensities disagree structurally across channels. In this way, I align on gradient-magnitude edge maps instead of raw pixels. I computed horizontal and vertical 
+          intensity gradients, using a small 3×3 weighted-difference kernel applied via padding and shifted-array slicing, and combined them into a single edge-strength map as sqrt(Gx² + Gy²). We then 
+          fed these edge maps into our existing NCC/L2 search machinery unchanged. This worked because object boundaries tend to
+            occur in the same place across R, G, and B regardless of each region's color, making edges far more reliable than raw intensity for exactly the cases where color-based matching breaks 
+            down. We can see this from emir.tif, where the alignment is much better after switching to gradient features.
+        </p>
+      </div>
+    </section>
+
+    <!-- ================= PART 5 ================= -->
+    <section class="part">
+      <h2><span class="num">Part 5</span> Beyond the Example Set</h2>
+      <p class="blurb">
+        Three additional glass plates, picked from the Library of Congress Prokudin-Gorskii collection,
+        run through the full pipeline — feature-based alignment plus all four bells &amp; whistles.
+      </p>
+
+      <div class="compare-set">
+        <p class="compare-title">Pic 1 — g=(-1,2) r=(-2,9)</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid polaroid--tall">
+            <img src="assets/extra/original/selfchoose1.jpg" alt="Original raw glass-plate scan, Pic 1" loading="lazy">
+            <figcaption><input type="text" value="original scan" aria-label="Pic 1 original"></figcaption>
+          </figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid">
+            <img src="assets/extra/selfchoose1.jpg" alt="Pic 1, aligned and processed" loading="lazy">
+            <figcaption><input type="text" value="colorized" aria-label="Pic 1 result"></figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="compare-set">
+        <p class="compare-title">Pic 2 — g=(0,-1) r=(-1,4)</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid polaroid--tall">
+            <img src="assets/extra/original/selfchoose2.jpg" alt="Original raw glass-plate scan, Pic 2" loading="lazy">
+            <figcaption><input type="text" value="original scan" aria-label="Pic 2 original"></figcaption>
+          </figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid">
+            <img src="assets/extra/selfchoose2.jpg" alt="Pic 2, aligned and processed" loading="lazy">
+            <figcaption><input type="text" value="colorized" aria-label="Pic 2 result"></figcaption>
+          </figure>
+        </div>
+      </div>
+      <div class="compare-set">
+        <p class="compare-title">Pic 3 — g=(-1,2) r=(-2,5)</p>
+        <div class="compare">
+          <figure class="photo-slot polaroid polaroid--tall">
+            <img src="assets/extra/original/selfchoose3.jpg" alt="Original raw glass-plate scan, Pic 3" loading="lazy">
+            <figcaption><input type="text" value="original scan" aria-label="Pic 3 original"></figcaption>
+          </figure>
+          <div class="compare-label">→<span>before / after</span></div>
+          <figure class="photo-slot polaroid">
+            <img src="assets/extra/selfchoose3.jpg" alt="Pic 3, aligned and processed" loading="lazy">
+            <figcaption><input type="text" value="colorized" aria-label="Pic 3 result"></figcaption>
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p>EECS 280A — Project 1</p>
+    </footer>
+
   </main>
 
   <script src="script.js"></script>
