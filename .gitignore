@@ -2,3 +2,8 @@
 __pycache__/
 .ipynb_checkpoints/
 .DS_Store
+
+# Project 3: model weights, datasets and checkpoints (too large for GitHub)
+projects/project3/.cache/
+projects/project3/data/MNIST/
+projects/project3/results/**/*.pt

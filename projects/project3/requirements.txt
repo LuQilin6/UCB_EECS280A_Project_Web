@@ -1,0 +1,16 @@
+# Install torch/torchvision first from the CUDA 12.8 index (RTX 50-series needs cu128):
+#   .venv\Scripts\python.exe -m pip install torch torchvision --index-url https://download.pytorch.org/whl/cu128
+numpy
+matplotlib>=3.7,<4
+Pillow>=9.2
+tqdm
+imageio
+transformers==4.51.3
+huggingface-hub==0.36.2
+einops>=0.8,<1
+safetensors
+accelerate
+packaging
+ipykernel
+jupyter
+ipywidgets
