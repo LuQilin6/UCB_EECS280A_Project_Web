@@ -3,32 +3,363 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Project 04 // EECS280A</title>
-<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🖥️</text></svg>">
+<title>Project 4 // Image Mosaicing</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🧩</text></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,500;8..60,600;8..60,700&family=Nunito:ital,wght@0,400;0,600;0,700;1,600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <a class="back" href="../../index.html">← back to console</a>
 
   <main class="wrap">
-    <div class="tag">MODULE_04</div>
-    <h1>Project 04</h1>
-    <p class="sub">This page is a placeholder — replace this content with the real project write-up, demo, or embedded media whenever it's ready.</p>
 
-    <section class="card">
-      <h2>Overview</h2>
-      <p>Describe the problem, approach, and outcome of Project 04 here.</p>
+    <header class="page-head">
+      <p class="eyebrow">Project 4 — CS280A</p>
+      <h1>Image Warping and Mosaicing</h1>
+      <p class="tagline">Shoot overlapping photos, recover the homographies between them, warp them with my own inverse warping, and blend them into mosaics, both planar and cylindrical.</p>
+    </header>
+
+    <nav class="toc" aria-label="Contents">
+      <div>
+        <p>Part A</p>
+        <ol>
+          <li><a href="#a1">Shoot the Pictures</a></li>
+          <li><a href="#a2">Recover Homographies</a></li>
+          <li><a href="#a3">Warp the Images</a></li>
+        </ol>
+      </div>
+      <div>
+        <p>&nbsp;</p>
+        <ol start="4">
+          <li><a href="#a4">Blend the Images into a Mosaic</a></li>
+          <li><a href="#a5">Bells &amp; Whistles: Cylindrical Mapping</a></li>
+        </ol>
+      </div>
+    </nav>
+
+    <h2 class="part-title">Part A: Image Warping and Mosaicing</h2>
+
+    <!-- ---------- A.1 ---------- -->
+    <section class="part" id="a1">
+      <h2><span class="num">A.1</span> Shoot the Pictures</h2>
+      <p class="blurb">
+        All photos were taken on my phone, close together in time, with roughly 40–70% overlap between neighbors. For each set I tried to
+        keep the camera in one spot and only rotate it. The middle photo of each set is the <strong>reference</strong> that the others are
+        warped into.
+      </p>
+
+      <p class="strip-label">Mosaic 1: Gateway (3 photos)</p>
+      <div class="wide">
+        <figure class="shot"><img src="out/mosaic1_sources.jpg" alt="Three overlapping photos of a curved glass office building" loading="lazy"><figcaption>left · middle (reference) · right</figcaption></figure>
+      </div>
+
+      <p class="strip-label">Mosaic 2: shop window (3 photos)</p>
+      <div class="wide">
+        <figure class="shot"><img src="out/mosaic2_sources.jpg" alt="Three overlapping photos of a shop window full of toys and VHS tapes" loading="lazy"><figcaption>left · middle (reference) · right</figcaption></figure>
+      </div>
+
+      <p class="strip-label">Mosaic 3: apartment (2 photos)</p>
+      <div class="wide tall">
+        <figure class="shot"><img src="out/mosaic3_sources.jpg" alt="Two overlapping portrait photos of an apartment building facade" loading="lazy"><figcaption>left · right (reference)</figcaption></figure>
+      </div>
+
+      <p class="strip-label">Rectification photos</p>
+      <div class="strip pair" style="--cols:2">
+        <figure class="shot"><img src="out/rect1_input.jpg" alt="Photo of a monitor taken at an angle, with its screen corners outlined" loading="lazy"><figcaption>monitor screen, shot from the side</figcaption></figure>
+        <figure class="shot"><img src="out/rect2_input.jpg" alt="Photo of a laptop taken at an angle, with its corners outlined" loading="lazy"><figcaption>laptop, shot at an angle</figcaption></figure>
+      </div>
     </section>
 
-    <section class="card">
-      <h2>Details</h2>
-      <ul>
-        <li>Tech stack: —</li>
-        <li>Status: placeholder</li>
-        <li>Links: —</li>
+    <!-- ---------- A.2 ---------- -->
+    <section class="part" id="a2">
+      <h2><span class="num">A.2</span> Recover Homographies</h2>
+      <p class="blurb">
+        I clicked <strong>8 correspondences</strong> per image pair with <code>plt.ginput</code>, choosing sharp corners (window frames, sign
+        edges) spread over the overlap region. The clicks are saved to JSON so later runs reuse them. Below are the points for mosaic 1, left
+        image → reference.
+      </p>
+      <div class="wide">
+        <figure class="shot"><img src="out/mosaic1_correspondences.jpg" alt="Eight numbered correspondences marked on the left and middle photos of mosaic 1" loading="lazy"><figcaption>numbered correspondences: the same number marks the same feature in both images</figcaption></figure>
+      </div>
+
+      <h3>System of equations</h3>
+      <p class="blurb">
+        <code>computeH(im1_pts, im2_pts)</code> fixes the lower-right entry of H to 1, leaving 8 unknowns. Each correspondence
+        (x, y) → (u, v) gives two linear equations:
+      </p>
+      <div class="formula">
+        [ x &nbsp; y &nbsp; 1 &nbsp; 0 &nbsp; 0 &nbsp; 0 &nbsp; −ux &nbsp; −uy ] · h = u<br>
+        [ 0 &nbsp; 0 &nbsp; 0 &nbsp; x &nbsp; y &nbsp; 1 &nbsp; −vx &nbsp; −vy ] · h = v<br>
+        <span style="font-size:14px">h = (h<sub>11</sub>, h<sub>12</sub>, h<sub>13</sub>, h<sub>21</sub>, h<sub>22</sub>, h<sub>23</sub>, h<sub>31</sub>, h<sub>32</sub>)</span>
+      </div>
+      <p class="blurb">
+        Stacking all 8 points gives an over-determined 16 × 8 system <strong>Ah = b</strong>, which I solve by least squares
+        (<code>np.linalg.lstsq</code>). Here is the actual system for the mosaic 1 pair above:
+      </p>
+      <div class="table-wrap">
+        <table class="data-table matrix">
+          <caption>A (16 × 8) | b, mosaic 1 left → reference (pixel coordinates at 1200 px max side)</caption>
+          <thead><tr><th>x</th><th>y</th><th>1</th><th>x</th><th>y</th><th>1</th><th>−ux / −vx</th><th>−uy / −vy</th><th class="sep">b</th></tr></thead>
+          <tbody>
+            <tr><td>687.2</td><td>285</td><td>1</td><td>0</td><td>0</td><td>0</td><td>−192080.1</td><td>−79656.8</td><td class="sep">279.5</td></tr>
+            <tr><td>0</td><td>0</td><td>0</td><td>687.2</td><td>285</td><td>1</td><td>−171139.5</td><td>−70972.6</td><td class="sep">249.1</td></tr>
+            <tr><td>684.8</td><td>573.5</td><td>1</td><td>0</td><td>0</td><td>0</td><td>−129539.3</td><td>−108473.7</td><td class="sep">189.2</td></tr>
+            <tr><td>0</td><td>0</td><td>0</td><td>684.8</td><td>573.5</td><td>1</td><td>−376079.2</td><td>−314921.4</td><td class="sep">549.1</td></tr>
+            <tr><td>702.2</td><td>778.6</td><td>1</td><td>0</td><td>0</td><td>0</td><td>−105976.6</td><td>−117496.5</td><td class="sep">150.9</td></tr>
+            <tr><td>0</td><td>0</td><td>0</td><td>702.2</td><td>778.6</td><td>1</td><td>−545096.4</td><td>−604349.3</td><td class="sep">776.2</td></tr>
+            <tr><td>1037.1</td><td>399.7</td><td>1</td><td>0</td><td>0</td><td>0</td><td>−587891.4</td><td>−226566.6</td><td class="sep">566.9</td></tr>
+            <tr><td>0</td><td>0</td><td>0</td><td>1037.1</td><td>399.7</td><td>1</td><td>−474577.6</td><td>−182896.8</td><td class="sep">457.6</td></tr>
+            <tr><td>1103.1</td><td>649.9</td><td>1</td><td>0</td><td>0</td><td>0</td><td>−624051.6</td><td>−367684.9</td><td class="sep">565.7</td></tr>
+            <tr><td>0</td><td>0</td><td>0</td><td>1103.1</td><td>649.9</td><td>1</td><td>−752758.7</td><td>−443517.8</td><td class="sep">682.4</td></tr>
+            <tr><td>1150.6</td><td>820.3</td><td>1</td><td>0</td><td>0</td><td>0</td><td>−648259.4</td><td>−462138</td><td class="sep">563.4</td></tr>
+            <tr><td>0</td><td>0</td><td>0</td><td>1150.6</td><td>820.3</td><td>1</td><td>−961155.4</td><td>−685198.6</td><td class="sep">835.3</td></tr>
+            <tr><td>883</td><td>515.5</td><td>1</td><td>0</td><td>0</td><td>0</td><td>−367536.9</td><td>−214593.9</td><td class="sep">416.2</td></tr>
+            <tr><td>0</td><td>0</td><td>0</td><td>883</td><td>515.5</td><td>1</td><td>−469535.4</td><td>−274147.8</td><td class="sep">531.8</td></tr>
+            <tr><td>924.7</td><td>772.8</td><td>1</td><td>0</td><td>0</td><td>0</td><td>−359185.7</td><td>−300173</td><td class="sep">388.4</td></tr>
+            <tr><td>0</td><td>0</td><td>0</td><td>924.7</td><td>772.8</td><td>1</td><td>−722066.3</td><td>−603433.8</td><td class="sep">780.9</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <h3>Recovered homography</h3>
+      <div class="table-wrap h-wrap">
+        <table class="data-table matrix">
+          <caption>H, mosaic 1 left → reference</caption>
+          <tbody>
+            <tr><td>2.095742</td><td>−0.521916</td><td>−827.085544</td></tr>
+            <tr><td>0.903139</td><td>1.63526</td><td>−672.845623</td></tr>
+            <tr><td>0.001035</td><td>−0.000174</td><td>1</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <p class="blurb">
+        Mapping the 8 clicked points through H lands them on their partners with a mean error of <strong>1.63 px</strong> (max 2.94 px).
+        Fits for all five pairs:
+      </p>
+      <div class="table-wrap h-wrap">
+        <table class="data-table">
+          <caption>Reprojection error of the clicked points (8 per pair)</caption>
+          <thead><tr><th>Pair</th><th>Mean</th><th>Max</th></tr></thead>
+          <tbody>
+            <tr><td>mosaic 1, left → middle</td><td class="n">1.63 px</td><td class="n">2.94 px</td></tr>
+            <tr><td>mosaic 1, right → middle</td><td class="n">4.50 px</td><td class="n">8.85 px</td></tr>
+            <tr><td>mosaic 2, left → middle</td><td class="n">3.60 px</td><td class="n">6.04 px</td></tr>
+            <tr><td>mosaic 2, right → middle</td><td class="n">2.75 px</td><td class="n">6.45 px</td></tr>
+            <tr><td>mosaic 3, left → right</td><td class="n">4.13 px</td><td class="n">8.39 px</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- ---------- A.3 ---------- -->
+    <section class="part" id="a3">
+      <h2><span class="num">A.3</span> Warp the Images</h2>
+      <p class="blurb">
+        Both <code>warpImageNearestNeighbor(im, H)</code> and <code>warpImageBilinear(im, H)</code> use <strong>inverse warping</strong>. I
+        first push the four image corners through H to get the output bounding box. Then, for every output pixel, I map it back into the
+        source image with H<sup>−1</sup> and sample there, so the output has no holes. Pixels that land outside the source get alpha = 0.
+        Pixel (0, 0) is treated as the center of the top-left pixel. The two functions differ only in how they sample:
+      </p>
+      <ul class="blurb">
+        <li><strong>Nearest neighbor</strong> rounds the source location to the closest pixel.</li>
+        <li><strong>Bilinear</strong> takes a weighted average of the four surrounding pixels, weighted by how close the location is to each.</li>
       </ul>
+      <p class="blurb">
+        Both are written from scratch in NumPy, with no <code>cv2</code>/<code>skimage</code> warping or <code>griddata</code>.
+      </p>
+
+      <h3>Rectification</h3>
+      <p class="blurb">
+        I clicked the four corners of a known rectangle (top-left, top-right, bottom-right, bottom-left) and mapped them to an axis-aligned
+        rectangle with the object's real width / height ratio: 1.746 for the monitor screen, 1.423 for the laptop lid. The output keeps the rectangle plus
+        a margin around it.
+      </p>
+
+      <p class="strip-label">Rectification 1: monitor</p>
+      <div class="wide">
+        <figure class="shot"><img src="out/rect1_compare.jpg" alt="Rectified monitor, nearest neighbor and bilinear side by side" loading="lazy"><figcaption>nearest neighbor (left) vs bilinear (right)</figcaption></figure>
+      </div>
+      <div class="wide zoom">
+        <figure class="shot"><img src="out/rect1_zoom.jpg" alt="Zoomed crop of the rectified monitor wallpaper, nearest vs bilinear" loading="lazy"><figcaption>zoomed center crop</figcaption></figure>
+      </div>
+
+      <p class="strip-label">Rectification 2: laptop lid</p>
+      <div class="wide">
+        <figure class="shot"><img src="out/rect2_compare.jpg" alt="Rectified laptop lid, nearest neighbor and bilinear side by side" loading="lazy"><figcaption>nearest neighbor (left) vs bilinear (right)</figcaption></figure>
+      </div>
+      <div class="wide zoom">
+        <figure class="shot"><img src="out/rect2_zoom.jpg" alt="Zoomed crop of the Apple logo on the rectified lid, nearest vs bilinear" loading="lazy"><figcaption>zoomed center crop (Apple logo edge)</figcaption></figure>
+      </div>
+
+      <div class="table-wrap h-wrap">
+        <table class="data-table">
+          <caption>Warp time (rectangle + margin, at 1200 px max side)</caption>
+          <thead><tr><th>Image</th><th>Nearest</th><th>Bilinear</th></tr></thead>
+          <tbody>
+            <tr><td>monitor</td><td class="n">0.07 s</td><td class="n">0.17 s</td></tr>
+            <tr><td>laptop lid</td><td class="n">0.07 s</td><td class="n">0.16 s</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="notes">
+        <p class="notes-label">Nearest neighbor vs bilinear</p>
+        <ul>
+          <li><strong>Quality:</strong> at full size the two look nearly the same, but the zoomed crops show the difference. Nearest neighbor
+            gives stair-stepped, jagged edges: the outline of the hair and ear on the monitor, and the curve of the Apple logo. Bilinear gives
+            smooth edges, at the cost of being slightly softer.</li>
+          <li><strong>Speed:</strong> nearest neighbor does one lookup per pixel, while bilinear does four lookups plus blending, so it is about
+            2.4× slower here (0.17 s vs 0.07 s). That is still fast enough, so I use bilinear for every mosaic.</li>
+        </ul>
+      </div>
     </section>
+
+    <!-- ---------- A.4 ---------- -->
+    <section class="part" id="a4">
+      <h2><span class="num">A.4</span> Blend the Images into a Mosaic</h2>
+      <div class="notes">
+        <p class="notes-label">Procedure</p>
+        <ol class="steps">
+          <li><strong>Register:</strong> the middle photo is the reference and stays unwarped. Each other photo gets its homography to the
+            reference from A.2.</li>
+          <li><strong>Canvas:</strong> I push every photo's four corners through its homography. The union of those bounding boxes is the
+            mosaic canvas, so all photos are inverse-warped (bilinear) straight onto the same canvas at once.</li>
+          <li><strong>Weights:</strong> each photo carries a feather weight that is 1 at its center and falls linearly to 0 at its border.
+            The weight is warped along with the photo as an extra channel.</li>
+          <li><strong>Blend (2-level Laplacian pyramid):</strong> I split every warped photo into a low-frequency band (Gaussian blur) and a
+            high-frequency band (photo minus blur). The low bands are averaged using the feather weights. The high bands are taken only from
+            the photo with the largest weight at each pixel. The two bands are then added back together.</li>
+        </ol>
+      </div>
+
+      <div class="mosaic-block">
+        <p class="strip-label">Mosaic 1: curved glass building</p>
+        <div class="wide">
+          <figure class="shot"><img src="out/mosaic1_sources.jpg" alt="Source photos for mosaic 1" loading="lazy"><figcaption>sources</figcaption></figure>
+        </div>
+        <div class="wide">
+          <figure class="shot"><img src="out/mosaic1_mosaic.jpg" alt="Planar mosaic of the curved glass building from three photos" loading="lazy"><figcaption>mosaic 1</figcaption></figure>
+        </div>
+      </div>
+
+      <div class="mosaic-block">
+        <p class="strip-label">Mosaic 2: shop window</p>
+        <div class="wide">
+          <figure class="shot"><img src="out/mosaic2_sources.jpg" alt="Source photos for mosaic 2" loading="lazy"><figcaption>sources</figcaption></figure>
+        </div>
+        <div class="wide">
+          <figure class="shot"><img src="out/mosaic2_mosaic.jpg" alt="Planar mosaic of the shop window from three photos" loading="lazy"><figcaption>mosaic 2</figcaption></figure>
+        </div>
+      </div>
+
+      <div class="mosaic-block">
+        <p class="strip-label">Mosaic 3: apartment building</p>
+        <div class="wide tall">
+          <figure class="shot"><img src="out/mosaic3_sources.jpg" alt="Source photos for mosaic 3" loading="lazy"><figcaption>sources</figcaption></figure>
+        </div>
+        <div class="wide tall">
+          <figure class="shot"><img src="out/mosaic3_mosaic.jpg" alt="Planar mosaic of the apartment building from two photos" loading="lazy"><figcaption>mosaic 3</figcaption></figure>
+        </div>
+      </div>
+
+      <h3>Reducing edge artifacts</h3>
+      <p class="blurb">
+        To show what the blending fixes, I compare it with a naive version that simply averages the photos wherever they overlap:
+      </p>
+      <div class="wide">
+        <figure class="shot"><img src="out/mosaic1_naive.jpg" alt="Naive average mosaic of the glass building" loading="lazy"><figcaption>mosaic 1, naive average</figcaption></figure>
+      </div>
+      <div class="wide narrow">
+        <figure class="shot"><img src="assets/mosaic1_seam_zoom.jpg" alt="Zoomed crop where the right photo meets the reference: naive average vs blended" loading="lazy"><figcaption>zoom on the overlap with the right photo</figcaption></figure>
+      </div>
+      <div class="notes">
+        <p class="notes-label">What the blending fixes</p>
+        <ul>
+          <li><strong>Hard seams:</strong> in the naive mosaic, the border of the right photo shows up as a straight line across the sky,
+            because its exposure differs slightly from the reference. The feather weights fall to 0 at every photo's border, so no border can
+            appear as a sharp line.</li>
+          <li><strong>Ghosting:</strong> averaging two slightly misregistered photos doubles every edge. In the zoom you can see the doubled
+            window frames on the left. Taking the high-frequency band from only one photo keeps a single sharp copy of each edge.</li>
+          <li><strong>Exposure differences:</strong> averaging only the blurred low band over the wide feathered overlap spreads the brightness
+            change out smoothly instead of leaving a visible step.</li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- ---------- A.5 ---------- -->
+    <section class="part" id="a5">
+      <h2><span class="num bw">A.5 · B&amp;W</span> Cylindrical Mapping</h2>
+      <p class="blurb">
+        Instead of warping onto the reference photo's plane, I project every photo onto a <strong>cylinder</strong> around the camera, with
+        radius equal to the focal length in pixels. Each cylinder image is made by inverse sampling (bilinear) straight from the
+        <strong>original</strong> photo, so nothing is resampled twice.
+      </p>
+      <p class="blurb">
+        My photos are hand-held and tilted up at the buildings, so a plain left–right shift on the cylinder could not line them up. Instead
+        I estimate each camera's full 3D rotation relative to the reference from the same clicked correspondences (a least-squares best-fit
+        rotation between the two sets of viewing rays). Every photo is then sampled onto one shared cylinder and blended exactly as in A.4.
+      </p>
+
+      <div class="mosaic-block">
+        <p class="strip-label">Mosaic 1: planar vs cylindrical</p>
+        <div class="strip pair" style="--cols:2">
+          <figure class="shot"><img src="out/mosaic1_mosaic.jpg" alt="Planar mosaic of the glass building" loading="lazy"><figcaption>planar</figcaption></figure>
+          <figure class="shot"><img src="out/mosaic1_cylindrical.jpg" alt="Cylindrical mosaic of the glass building" loading="lazy"><figcaption>cylindrical, f = 832 px</figcaption></figure>
+        </div>
+      </div>
+
+      <div class="mosaic-block">
+        <p class="strip-label">Mosaic 2: planar vs cylindrical</p>
+        <div class="strip pair" style="--cols:2">
+          <figure class="shot"><img src="out/mosaic2_mosaic.jpg" alt="Planar mosaic of the shop window" loading="lazy"><figcaption>planar</figcaption></figure>
+          <figure class="shot"><img src="out/mosaic2_cylindrical.jpg" alt="Cylindrical mosaic of the shop window" loading="lazy"><figcaption>cylindrical, f = 832 px</figcaption></figure>
+        </div>
+      </div>
+
+      <div class="mosaic-block">
+        <p class="strip-label">Mosaic 3: planar vs cylindrical</p>
+        <div class="strip tall-pair" style="--cols:2">
+          <figure class="shot"><img src="out/mosaic3_mosaic.jpg" alt="Planar mosaic of the apartment building" loading="lazy"><figcaption>planar</figcaption></figure>
+          <figure class="shot"><img src="out/mosaic3_cylindrical.jpg" alt="Cylindrical mosaic of the apartment building" loading="lazy"><figcaption>cylindrical, f = 1213 px</figcaption></figure>
+        </div>
+      </div>
+
+      <h3>Choosing the focal length</h3>
+      <p class="blurb">
+        I take the focal length from each photo's EXIF data (its 35 mm-equivalent focal length, converted to pixels). To check that this
+        radius looks right, I swept f from 0.5× to 2× that value and measured how badly the clicked points disagree after rotation-only
+        alignment:
+      </p>
+      <div class="wide narrow">
+        <figure class="shot"><img src="out/focal_sweep.jpg" alt="Mean misalignment versus focal length scale for the three mosaics" loading="lazy"><figcaption>misalignment vs f / f<sub>EXIF</sub></figcaption></figure>
+      </div>
+      <div class="notes">
+        <p class="notes-label">Observations</p>
+        <ul>
+          <li><strong>The EXIF focal length is a good radius:</strong> the curves bottom out at 1.00× (mosaic 1), 0.98× (mosaic 2) and
+            0.90× (mosaic 3) of the EXIF value. A smaller f over-bends the photos, while a larger f flattens them toward the planar result.</li>
+          <li><strong>Planar vs cylindrical:</strong> the planar mosaics stretch the outer photos into big wedges (see the left and right
+            ends of mosaic 1). On the cylinder every photo keeps a similar size, so the result is more compact and the outer parts are not
+            blown up. Straight horizontal lines curve instead, which is the trade-off of the cylinder.</li>
+          <li><strong>Mosaic 2 is the limitation:</strong> its points still disagree by 12–15 px after the best rotation (vs 1.6–5 px for
+            the other sets), and the cylindrical version shows ghosting. I moved sideways along the shop window between shots, so the
+            photos are not related by a pure rotation. The planar mosaic still works because the window is nearly flat, and a homography
+            is exact for a flat scene even when the camera moves.</li>
+        </ul>
+      </div>
+    </section>
+
+    <footer class="foot">
+      <p>EECS 280A — Project 4</p>
+    </footer>
+
   </main>
+
+  <div class="lightbox" id="lightbox" role="dialog" aria-modal="true" aria-label="Enlarged image">
+    <img src="" alt="">
+    <p></p>
+  </div>
 
   <script src="script.js"></script>
 </body>
