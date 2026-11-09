@@ -18,7 +18,7 @@
     <header class="page-head">
       <p class="eyebrow">Project 4 — CS280A</p>
       <h1>Image Warping and Mosaicing</h1>
-      <p class="tagline">Shoot overlapping photos, recover the homographies between them, warp them with my own inverse warping, and blend them into mosaics, both planar and cylindrical.</p>
+      <p class="tagline">Shoot overlapping photos, recover the homographies between them, warp them with my own inverse warping, and blend them into mosaics, both planar and cylindrical. Then do the same automatically: detect, describe and match features, and fit the homographies with RANSAC.</p>
     </header>
 
     <nav class="toc" aria-label="Contents">
@@ -35,6 +35,21 @@
         <ol start="4">
           <li><a href="#a4">Blend the Images into a Mosaic</a></li>
           <li><a href="#a5">Bells &amp; Whistles: Cylindrical Mapping</a></li>
+        </ol>
+      </div>
+      <div>
+        <p>Part B</p>
+        <ol>
+          <li><a href="#b1">Harris Corner Detection</a></li>
+          <li><a href="#b2">Feature Descriptor Extraction</a></li>
+          <li><a href="#b3">Feature Matching</a></li>
+        </ol>
+      </div>
+      <div>
+        <p>&nbsp;</p>
+        <ol start="4">
+          <li><a href="#b4">RANSAC for Robust Homography</a></li>
+          <li><a href="#b5">Bells &amp; Whistles: Rotation Invariance</a></li>
         </ol>
       </div>
     </nav>
@@ -347,6 +362,140 @@
             photos are not related by a pure rotation. The planar mosaic still works because the window is nearly flat, and a homography
             is exact for a flat scene even when the camera moves.</li>
         </ul>
+      </div>
+    </section>
+
+    <h2 class="part-title">Part B: Feature Matching for Autostitching</h2>
+    <p class="blurb">
+      Following Brown et al., <em>Multi-Image Matching using Multi-Scale Oriented Patches</em>, with the simplifications from the
+      assignment: single-scale Harris corners, axis-aligned 8 × 8 descriptors, Lowe's ratio test and 4-point RANSAC.
+    </p>
+
+    <!-- ---------- B.1 ---------- -->
+    <section class="part" id="b1">
+      <h2><span class="num">B.1</span> Harris Corner Detection</h2>
+      <p class="blurb">
+        Harris corners come from the provided <code>harris.py</code> (every local maximum of the corner response, at least 20 px from the
+        border). I drop maxima weaker than 1/1000 of the strongest response, which leaves about 11,000 corners on this image. Taking the
+        strongest 500 piles them onto the high-contrast window frames.
+      </p>
+      <p class="blurb">
+        <strong>Adaptive Non-Maximal Suppression</strong> instead gives every corner a radius
+        r<sub>i</sub> = min<sub>j</sub> |x<sub>i</sub> − x<sub>j</sub>|, taken over corners that are clearly stronger
+        (f(x<sub>i</sub>) &lt; 0.9 f(x<sub>j</sub>)). It keeps the 500 corners with the largest radius, which spreads them evenly over the
+        image, including the trees and the doorway.
+      </p>
+      <div class="wide">
+        <figure class="shot"><img src="out/mosaic1_anms.jpg" alt="Harris corners on the glass building: all corners, strongest 500, and 500 chosen by ANMS" loading="lazy"><figcaption>all Harris corners (without ANMS) · strongest 500 · 500 chosen by ANMS</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ---------- B.2 ---------- -->
+    <section class="part" id="b2">
+      <h2><span class="num">B.2</span> Feature Descriptor Extraction</h2>
+      <p class="blurb">
+        For each ANMS corner I sample an 8 × 8 grid with a spacing of 5 px, covering a 40 × 40 window. To avoid aliasing, the grayscale
+        image is blurred (Gaussian, σ = 2) before sampling, so each sample summarizes its 5 × 5 neighborhood. Each 64-vector is then
+        bias/gain normalized to mean 0 and standard deviation 1, which makes it insensitive to exposure differences between photos.
+      </p>
+      <div class="wide">
+        <figure class="shot"><img src="out/mosaic1_descriptors.jpg" alt="Six features on the glass building with their 40 by 40 windows and normalized 8 by 8 descriptors" loading="lazy"><figcaption>six features: 40 × 40 window (top) and its normalized 8 × 8 descriptor (bottom)</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ---------- B.3 ---------- -->
+    <section class="part" id="b3">
+      <h2><span class="num">B.3</span> Feature Matching</h2>
+      <p class="blurb">
+        Each descriptor is compared with every descriptor in the reference image by squared distance. Following Lowe and Figure 6b of the
+        paper, a match is kept only when the ratio of the nearest to the second-nearest distance is below <strong>0.5</strong>.
+        Below 0.4 there are almost no incorrect matches, and above 0.6 they rise sharply. I also require the match to be mutual (each
+        feature is the other's nearest neighbor).
+      </p>
+      <p class="strip-label">Mosaic 1: right image vs reference (37 matches)</p>
+      <div class="wide">
+        <figure class="shot"><img src="out/mosaic1_matches_2.jpg" alt="Matched features between the right and middle photos of the glass building" loading="lazy"><figcaption>mosaic 1</figcaption></figure>
+      </div>
+      <p class="strip-label">Mosaic 2: left image vs reference (111 matches)</p>
+      <div class="wide">
+        <figure class="shot"><img src="out/mosaic2_matches_0.jpg" alt="Matched features between the left and middle photos of the shop window" loading="lazy"><figcaption>mosaic 2</figcaption></figure>
+      </div>
+      <p class="strip-label">Mosaic 3: left image vs reference (117 matches)</p>
+      <div class="wide mid">
+        <figure class="shot"><img src="out/mosaic3_matches_0.jpg" alt="Matched features between the two photos of the apartment building" loading="lazy"><figcaption>mosaic 3</figcaption></figure>
+      </div>
+    </section>
+
+    <!-- ---------- B.4 ---------- -->
+    <section class="part" id="b4">
+      <h2><span class="num">B.4</span> RANSAC for Robust Homography</h2>
+      <p class="blurb">
+        Some matches are still wrong, and a single bad match can pull a least-squares homography far off. My 4-point RANSAC, written from
+        scratch, repeats 5,000 times: pick 4 random matches, solve H exactly from them, and count the matches it maps to within 3 px of their
+        partner (the inliers). It keeps the largest inlier set and refits H on all of it by least squares. The mosaics are then built with
+        the same warping and blending as Part A.
+      </p>
+
+      <div class="mosaic-block">
+        <p class="strip-label">Mosaic 1: manual vs automatic</p>
+        <div class="wide">
+          <figure class="shot"><img src="out/mosaic1_manual_vs_auto.jpg" alt="Glass building mosaic from manual correspondences next to the automatic one" loading="lazy"><figcaption>manual correspondences (left) · automatic (right)</figcaption></figure>
+        </div>
+      </div>
+
+      <div class="mosaic-block">
+        <p class="strip-label">Mosaic 2: manual vs automatic</p>
+        <div class="wide">
+          <figure class="shot"><img src="out/mosaic2_manual_vs_auto.jpg" alt="Shop window mosaic from manual correspondences next to the automatic one" loading="lazy"><figcaption>manual correspondences (left) · automatic (right)</figcaption></figure>
+        </div>
+      </div>
+
+      <div class="mosaic-block">
+        <p class="strip-label">Mosaic 3: manual vs automatic</p>
+        <div class="wide mid">
+          <figure class="shot"><img src="out/mosaic3_manual_vs_auto.jpg" alt="Apartment building mosaic from manual correspondences next to the automatic one" loading="lazy"><figcaption>manual correspondences (left) · automatic (right)</figcaption></figure>
+        </div>
+      </div>
+      <p class="blurb">
+        The automatic mosaics match or beat the manual ones. In mosaic 2 the bottom window frame breaks at the seam with manual points but
+        is continuous with RANSAC, and in mosaic 3 the ghosted roof edge in the middle disappears. RANSAC fits H to dozens of matches
+        spread over the overlap (9 to 95 inliers per pair) instead of my 8 clicks, so it describes the overlap better.
+      </p>
+    </section>
+
+    <!-- ---------- B.5 ---------- -->
+    <section class="part" id="b5">
+      <h2><span class="num bw">B.5 · B&amp;W</span> Rotation Invariance</h2>
+      <p class="blurb">
+        Following Section 2 of the paper, each corner gets an orientation θ from the gradient of a heavily blurred image (σ = 4.5). The
+        8 × 8 sample grid is rotated by θ before sampling, so every descriptor is taken in its own frame where the gradient points to the
+        right. When the image rotates, θ rotates with it and the descriptor stays the same.
+      </p>
+      <div class="wide narrow">
+        <figure class="shot"><img src="out/oriented_features.jpg" alt="Oriented patches on the shop window; each box is rotated to its feature's orientation" loading="lazy"><figcaption>oriented patches (every 3rd feature); the red line is the orientation</figcaption></figure>
+      </div>
+
+      <h3>Matching a rotated copy</h3>
+      <p class="blurb">
+        I rotated the shop-window reference image by different angles and matched it against the original. Because the true homography
+        is known, every correct match can be counted exactly.
+      </p>
+      <div class="wide narrow">
+        <figure class="shot"><img src="out/rotation_sweep.jpg" alt="Correct matches versus rotation angle for axis-aligned and rotation-invariant descriptors" loading="lazy"><figcaption>correct matches vs rotation angle</figcaption></figure>
+      </div>
+      <p class="blurb">
+        The axis-aligned descriptors from B.2 drop from 500 correct matches to 44 at 15° and to almost none from 30° on. The
+        rotation-invariant descriptors keep 262–490 at every angle. At 0° they are very slightly worse (492 vs 500), because errors in θ
+        add a little noise.
+      </p>
+
+      <h3>Stitching a rotated photo</h3>
+      <p class="blurb">
+        I rotated the left photo of mosaic 3 by 30° and stitched it automatically. Axis-aligned descriptors find only 1 match, which is
+        not enough for RANSAC. Rotation-invariant descriptors find 111 matches (87 RANSAC inliers), and the mosaic lines up.
+      </p>
+      <div class="wide mid">
+        <figure class="shot"><img src="out/rotated_mosaic.jpg" alt="The left apartment photo rotated 30 degrees, and the automatic mosaic built from it" loading="lazy"><figcaption>input rotated 30° (left) · automatic mosaic with rotation-invariant descriptors (right)</figcaption></figure>
       </div>
     </section>
 

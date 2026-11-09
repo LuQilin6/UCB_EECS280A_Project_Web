@@ -8,7 +8,7 @@ REQUIREMENTS
 ------------
 - Python 3.9+ (developed with Python 3.11)
 - Packages listed in requirements.txt:
-    numpy scipy matplotlib pillow ipykernel jupyter
+    numpy scipy matplotlib pillow ipykernel jupyter scikit-image
 - macOS for the point-clicking windows (%matplotlib osx). On other
   systems, see "Clicking points" below.
 

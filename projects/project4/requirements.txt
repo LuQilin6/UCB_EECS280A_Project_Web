@@ -4,3 +4,4 @@ matplotlib
 pillow
 ipykernel
 jupyter
+scikit-image
